@@ -6,7 +6,7 @@ export const STAGE_DATA = {
     id: 'stage_1',
     name: 'บทที่ 1: การตื่นรู้',
     description: 'ปกป้องคริสตัลอีเธอร์จากฝูงอสูรโกลาหลที่เข้ามารุกราน',
-    backgroundImage: '/assets/01_stage.png',
+    backgroundImage: './assets/01_stage.png',
     // Stage 1 follows the composition of its background image. All positions
     // are normalized (0 = left/top edge, 1 = right/bottom edge), so they
     // remain aligned when the map is scaled.

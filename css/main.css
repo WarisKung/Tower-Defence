@@ -1,0 +1,253 @@
+/* ==========================================
+   ASTRA: Aether Guardians — Main Styles
+   Dark Fantasy + Anime aesthetic
+   ========================================== */
+
+/* === Design Tokens === */
+:root {
+  /* Core Colors */
+  --color-bg-dark: #0a0a12;
+  --color-bg-deep: #0d0d1a;
+  --color-bg-medium: #141428;
+  --color-bg-surface: #1a1a35;
+  --color-bg-elevated: #222244;
+
+  /* Aether Colors (magical glow palette) */
+  --color-aether-blue: #4db8ff;
+  --color-aether-cyan: #00e5ff;
+  --color-aether-purple: #9b59f0;
+  --color-aether-violet: #7c3aed;
+  --color-aether-gold: #ffd700;
+  --color-aether-amber: #f59e0b;
+
+  /* Semantic Colors */
+  --color-hp-green: #22c55e;
+  --color-hp-yellow: #eab308;
+  --color-hp-red: #ef4444;
+  --color-mana-blue: #3b82f6;
+  --color-xp-purple: #a855f7;
+  --color-gold: #fbbf24;
+
+  /* Text Colors */
+  --color-text-primary: #e8e6f0;
+  --color-text-secondary: #9a97b0;
+  --color-text-muted: #5a5873;
+  --color-text-accent: var(--color-aether-cyan);
+
+  /* Rarity Colors */
+  --color-rarity-n: #8b8b8b;
+  --color-rarity-r: #4db8ff;
+  --color-rarity-sr: #b066ff;
+  --color-rarity-ssr: #ffd700;
+
+  /* Gradients */
+  --gradient-aether: linear-gradient(135deg, var(--color-aether-purple), var(--color-aether-blue));
+  --gradient-dark: linear-gradient(180deg, var(--color-bg-dark) 0%, var(--color-bg-deep) 100%);
+  --gradient-surface: linear-gradient(135deg, rgba(30, 30, 60, 0.8), rgba(20, 20, 45, 0.9));
+  --gradient-gold: linear-gradient(135deg, #ffd700, #f59e0b);
+
+  /* Glass */
+  --glass-bg: rgba(15, 15, 35, 0.75);
+  --glass-border: rgba(100, 100, 200, 0.15);
+  --glass-blur: blur(12px);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-blue: 0 0 20px rgba(77, 184, 255, 0.3);
+  --shadow-glow-purple: 0 0 20px rgba(155, 89, 240, 0.3);
+  --shadow-glow-gold: 0 0 20px rgba(255, 215, 0, 0.3);
+
+  /* Typography */
+  --font-primary: 'Outfit', sans-serif;
+  --font-thai: 'Noto Sans Thai', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Game Canvas */
+  --game-width: 1280;
+  --game-height: 720;
+
+  /* Z-index layers */
+  --z-canvas: 1;
+  --z-hud: 10;
+  --z-panel: 20;
+  --z-overlay: 30;
+  --z-dialogue: 40;
+  --z-modal: 50;
+  --z-loading: 100;
+}
+
+/* === Reset === */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === Base === */
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg-dark);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  cursor: default;
+}
+
+/* === Screen System === */
+.screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  z-index: var(--z-canvas);
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* === Loading Screen === */
+#loading-screen {
+  z-index: var(--z-loading);
+  background: var(--color-bg-dark);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-content {
+  text-align: center;
+  z-index: 2;
+}
+
+.game-title {
+  font-family: var(--font-primary);
+  font-size: 72px;
+  font-weight: 900;
+  letter-spacing: 12px;
+  background: var(--gradient-aether);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase;
+  margin-bottom: var(--space-xs);
+  filter: drop-shadow(0 0 30px rgba(77, 184, 255, 0.4));
+}
+
+.game-title.glowing {
+  animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+.game-subtitle {
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 8px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2xl);
+}
+
+.loading-bar-container {
+  width: 300px;
+  height: 4px;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+  margin: var(--space-lg) auto;
+  overflow: hidden;
+}
+
+.loading-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--gradient-aether);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+  box-shadow: var(--shadow-glow-blue);
+}
+
+.loading-text {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  letter-spacing: 2px;
+}
+
+/* Aether Particles (loading BG effect) */
+.aether-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* === Game Container === */
+#game-container {
+  position: relative;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-dark);
+}
+
+#game-container.active {
+  display: flex;
+}
+
+.game-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+  z-index: var(--z-canvas);
+}
+
+#bg-canvas { z-index: 1; }
+#entity-canvas { z-index: 2; }
+#fx-canvas { z-index: 3; pointer-events: none; }
+
+/* === Typography Utilities === */
+.text-glow {
+  text-shadow: 0 0 10px var(--color-aether-blue), 0 0 20px rgba(77, 184, 255, 0.3);
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-aether-purple);
+}

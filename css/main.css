@@ -89,7 +89,6 @@
   --z-overlay: 30;
   --z-dialogue: 40;
   --z-modal: 50;
-  --z-loading: 100;
 }
 
 /* === Reset === */
@@ -128,22 +127,6 @@ html, body {
   display: flex;
 }
 
-/* === Loading Screen === */
-#loading-screen {
-  z-index: var(--z-loading);
-  background: var(--color-bg-dark);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.loading-content {
-  text-align: center;
-  z-index: 2;
-}
-
 .game-title {
   font-family: var(--font-primary);
   font-size: 72px;
@@ -169,41 +152,6 @@ html, body {
   color: var(--color-text-secondary);
   text-transform: uppercase;
   margin-bottom: var(--space-2xl);
-}
-
-.loading-bar-container {
-  width: 300px;
-  height: 4px;
-  background: var(--color-bg-elevated);
-  border-radius: var(--radius-full);
-  margin: var(--space-lg) auto;
-  overflow: hidden;
-}
-
-.loading-bar {
-  width: 0%;
-  height: 100%;
-  background: var(--gradient-aether);
-  border-radius: var(--radius-full);
-  transition: width 0.3s ease;
-  box-shadow: var(--shadow-glow-blue);
-}
-
-.loading-text {
-  font-size: 14px;
-  color: var(--color-text-muted);
-  letter-spacing: 2px;
-}
-
-/* Aether Particles (loading BG effect) */
-.aether-particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
 }
 
 /* === Game Container === */

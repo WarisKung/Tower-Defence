@@ -15,7 +15,6 @@ import { StageSelect } from '../ui/StageSelect.js';
 import { ResultScreen } from '../ui/ResultScreen.js';
 import { DialogueSystem } from '../ui/DialogueSystem.js';
 import { SceneTransition } from '../ui/SceneTransition.js';
-import { AssetLoader } from '../utils/AssetLoader.js';
 import { SaveManager } from '../utils/SaveManager.js';
 import { SoundManager } from '../utils/SoundManager.js';
 import { ObjectPool } from '../utils/ObjectPool.js';
@@ -30,7 +29,6 @@ import { createEnemy } from '../entities/enemies/EnemyFactory.js';
  * Game states enum
  */
 export const GameState = {
-  LOADING: 'LOADING',
   MENU: 'MENU',
   STAGE_SELECT: 'STAGE_SELECT',
   PRE_BATTLE: 'PRE_BATTLE',   // Dialogue/cutscene before battle
@@ -43,7 +41,7 @@ export const GameState = {
 export class GameManager {
   constructor() {
     // State
-    this.state = GameState.LOADING;
+    this.state = GameState.MENU;
     this.previousState = null;
 
     // Canvas setup
@@ -66,7 +64,6 @@ export class GameManager {
     this.inputManager = null;
     this.resourceSystem = null;
     this.waveManager = null;
-    this.assetLoader = new AssetLoader();
     this.saveManager = new SaveManager();
     this.soundManager = new SoundManager();
 
@@ -106,14 +103,8 @@ export class GameManager {
   /**
    * Initialize and start the game
    */
-  async init() {
+  init() {
     console.log('[ASTRA] Initializing game...');
-
-    // Show loading screen
-    this._showScreen('loading-screen');
-
-    // Load assets
-    await this._loadAssets();
 
     // Initialize UI systems
     this._initUI();
@@ -162,57 +153,6 @@ export class GameManager {
   }
 
   /**
-   * Load game assets
-   */
-  async _loadAssets() {
-    const loadingBar = document.getElementById('loading-bar');
-    const loadingText = document.getElementById('loading-text');
-
-    // Create loading particles
-    this._createLoadingParticles();
-
-    // Simulate asset loading phases
-    const phases = [
-      { text: 'Loading core systems...', progress: 20 },
-      { text: 'Loading unit data...', progress: 40 },
-      { text: 'Loading enemy data...', progress: 60 },
-      { text: 'Loading stage data...', progress: 80 },
-      { text: 'Initializing Aether...', progress: 100 },
-    ];
-
-    for (const phase of phases) {
-      loadingText.textContent = phase.text;
-      loadingBar.style.width = `${phase.progress}%`;
-      await this._delay(400);
-    }
-
-    await this._delay(500);
-  }
-
-  _createLoadingParticles() {
-    const container = document.getElementById('loading-particles');
-    if (!container) return;
-    for (let i = 0; i < 30; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'loading-particle';
-      particle.style.left = `${Math.random() * 100}%`;
-      particle.style.animationDuration = `${3 + Math.random() * 5}s`;
-      particle.style.animationDelay = `${Math.random() * 3}s`;
-      particle.style.opacity = `${0.3 + Math.random() * 0.7}`;
-      const size = 2 + Math.random() * 4;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-
-      // Randomize color between blue and purple
-      const hue = 200 + Math.random() * 80;
-      particle.style.background = `hsl(${hue}, 80%, 60%)`;
-      particle.style.boxShadow = `0 0 ${size * 2}px hsl(${hue}, 80%, 60%)`;
-
-      container.appendChild(particle);
-    }
-  }
-
-  /**
    * Initialize UI systems
    */
   _initUI() {
@@ -244,9 +184,6 @@ export class GameManager {
 
   _onStateExit(state) {
     switch (state) {
-      case GameState.LOADING:
-        this._hideScreen('loading-screen');
-        break;
       case GameState.MENU:
         this._hideScreen('main-menu-screen');
         break;
@@ -804,10 +741,6 @@ export class GameManager {
   _hideScreen(id) {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
-  }
-
-  _delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   _renderNormalizedCore(ctx) {

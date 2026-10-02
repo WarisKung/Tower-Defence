@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ASTRA: Aether Guardians - Anime Dark Fantasy Tower Defense Game">
+  <title>ASTRA: Aether Guardians</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+
+<body>
+  <!-- Main Menu Screen -->
+  <div id="main-menu-screen" class="screen">
+    <div class="menu-bg-overlay"></div>
+    <div class="menu-content">
+      <div class="menu-logo">
+        <h1 class="game-title glowing">ASTRA</h1>
+        <p class="game-subtitle">Aether Guardians</p>
+      </div>
+      <nav class="menu-buttons">
+        <button class="menu-btn primary" id="btn-story" data-action="story">
+          <span class="btn-icon">⚔️</span>
+          <span class="btn-text">เล่นเกม</span>
+        </button>
+        <button class="menu-btn" id="btn-collection" data-action="collection">
+          <span class="btn-icon">📖</span>
+          <span class="btn-text">ฐานข้อมูล</span>
+        </button>
+        <button class="menu-btn" id="btn-lore" data-action="lore">
+          <span class="btn-icon">📜</span>
+          <span class="btn-text">เนื้อเรื่อง</span>
+        </button>
+        <button class="menu-btn" id="btn-credits" data-action="credits"
+          onclick="document.getElementById('credits-modal').classList.add('active')">
+          <span class="btn-icon">👥</span>
+          <span class="btn-text">จัดทำโดย</span>
+        </button>
+      </nav>
+      <p class="version-text">v1.0.0</p>
+    </div>
+  </div>
+
+  <!-- Stage Select Screen -->
+  <div id="stage-select-screen" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" id="btn-back-menu">← กลับ</button>
+      <h2 class="screen-title">เลือกด่าน</h2>
+    </div>
+
+    <div class="stage-select-content">
+      <!-- Added Story Panel to be displayed on stage select -->
+      <div class="story-preview-panel hidden" id="story-preview-panel">
+        <h3 id="story-title">บทนำ</h3>
+        <p id="story-content">เนื้อเรื่อง...</p>
+        <div id="story-waves-info"
+          style="margin-bottom: 1rem; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+        </div>
+        <button class="menu-btn primary" id="btn-start-from-story">เริ่มต่อสู้</button>
+      </div>
+
+      <div class="stage-grid" id="stage-grid">
+        <!-- Stages populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Lore Screen -->
+  <div id="lore-screen" class="screen" style="flex-direction: column;">
+    <div class="screen-header">
+      <button class="back-btn" id="btn-back-lore">← กลับ</button>
+      <h2 class="screen-title">เนื้อเรื่อง)</h2>
+    </div>
+    <div class="lore-content"
+      style="padding: 2rem; max-width: 800px; margin: 0 auto; color: white; line-height: 1.8; background: rgba(0,0,0,0.6); border-radius: 12px; margin-top: 2rem;">
+      <h3
+        style="color: #00e5ff; margin-bottom: 1rem; border-bottom: 1px solid rgba(0,229,255,0.3); padding-bottom: 0.5rem;">
+        โลก: ASTRA</h3>
+      <p style="margin-bottom: 1rem;">โลกแฟนตาซีที่ขับเคลื่อนด้วยพลังงานลึกลับชื่อว่า <strong>"Aether"</strong>
+        มนุษย์ใช้ Aether เป็นแหล่งพลังงานหลักในการสร้างเมืองและอารยธรรม</p>
+      <p style="margin-bottom: 1rem;">วันหนึ่ง เกิดปรากฏการณ์ <strong>"Abyss Gate"</strong> —
+        ประตูมิติที่เชื่อมต่อกับโลกปีศาจเปิดขึ้นกลางเมือง เหล่ามอนสเตอร์จากส่วนลึกของ Abyss
+        เริ่มบุกทะลักเข้ามาทำลายอารยธรรมมนุษย์</p>
+      <p>ผู้เล่นรับบทเป็น <strong>"Commander"</strong> ผู้ตื่นขึ้นพร้อมพลังพิเศษในการเรียก <strong>"นักรบจาก
+          Aether"</strong> ออกมาต่อสู้ปกป้องเมืองจากการรุกรานของ Abyss</p>
+    </div>
+  </div>
+
+  <!-- Collection Screen -->
+  <div id="collection-screen" class="screen" style="flex-direction: column;">
+    <div class="screen-header">
+      <button class="back-btn" id="btn-back-collection">← กลับ</button>
+      <h2 class="screen-title">ฐานข้อมูล</h2>
+    </div>
+    <div class="collection-content"
+      style="padding: 2rem; width: 100%; max-width: 1200px; margin: 0 auto; overflow-y: auto; display: flex; flex-direction: row; gap: 2rem; height: calc(100% - 80px);">
+      <div style="flex: 1;">
+        <h3
+          style="color: #00e5ff; margin-bottom: 1rem; border-bottom: 1px solid rgba(0,229,255,0.3); padding-bottom: 0.5rem;">
+          การ์เดี้ยนของเรา</h3>
+        <div id="collection-guardians"
+          style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;"></div>
+      </div>
+      <div style="flex: 1;">
+        <h3
+          style="color: #ff4444; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,68,68,0.3); padding-bottom: 0.5rem;">
+          ศัตรูที่พบ</h3>
+        <div id="collection-enemies"
+          style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Container -->
+  <div id="game-container" class="screen">
+    <!-- Skill Bar (Left) -->
+    <div class="skill-bar" id="skill-bar">
+      <div class="skill-slot" id="skill-meteor" data-skill="meteor">
+        <div class="skill-icon">🔥</div>
+        <div class="skill-name">METEOR</div>
+        <div class="skill-status" id="status-meteor">READY</div>
+        <div class="skill-cooldown-overlay" id="cd-meteor"></div>
+      </div>
+      <div class="skill-slot" id="skill-freeze" data-skill="freeze">
+        <div class="skill-icon">❄️</div>
+        <div class="skill-name">FREEZE</div>
+        <div class="skill-status" id="status-freeze">READY</div>
+        <div class="skill-cooldown-overlay" id="cd-freeze"></div>
+      </div>
+    </div>
+
+    <!-- Canvas Layers -->
+    <canvas id="bg-canvas" class="game-canvas"></canvas>
+    <canvas id="entity-canvas" class="game-canvas"></canvas>
+    <canvas id="fx-canvas" class="game-canvas"></canvas>
+
+    <!-- HUD Overlay -->
+    <div id="hud-overlay">
+      <!-- Top Bar -->
+      <div class="hud-top-bar">
+        <div class="hud-item" id="hud-wave">
+          <span class="hud-label">เวฟ</span>
+          <span class="hud-value" id="wave-counter">0 / 10</span>
+        </div>
+        <div class="hud-item core-hp" id="hud-core-hp">
+          <span class="hud-label">คริสตัลอีเธอร์</span>
+          <div class="hp-bar-container">
+            <div class="hp-bar" id="core-hp-bar"></div>
+            <span class="hp-text" id="core-hp-text">20 / 20</span>
+          </div>
+        </div>
+        <div class="hud-item" id="hud-aether">
+          <span class="hud-label">อีเธอร์</span>
+          <span class="hud-value aether-value" id="aether-counter">
+            <span class="aether-icon">◆</span> 200
+          </span>
+        </div>
+      </div>
+
+      <!-- Speed & Pause Controls -->
+      <div class="hud-controls">
+        <button class="hud-btn" id="btn-pause" title="หยุดชั่วคราว">⏸</button>
+        <button class="hud-btn" id="btn-speed" title="ปรับความเร็ว">1x</button>
+        <button class="hud-btn start-wave-btn" id="btn-start-wave" title="เริ่มเกม">▶ เริ่มเวฟ</button>
+      </div>
+
+      <!-- Unit Selection Panel (Bottom) -->
+      <div class="unit-panel" id="unit-panel">
+        <div class="unit-panel-header">
+          <span>เรียกใช้การ์เดียน</span>
+        </div>
+        <div class="unit-slots" id="unit-slots">
+          <!-- Unit slots populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit Info Panel (Right Side) -->
+    <div class="unit-info-panel hidden" id="unit-info-panel">
+      <button class="close-btn" id="btn-close-info">✕</button>
+      <div class="unit-info-header">
+        <div class="unit-portrait" id="unit-portrait"></div>
+        <div class="unit-info-title">
+          <h3 id="unit-info-name">Unit Name</h3>
+          <span class="unit-class-badge" id="unit-info-class">Archer</span>
+          <span class="unit-rarity" id="unit-info-rarity">SSR</span>
+        </div>
+      </div>
+      <div class="unit-stats" id="unit-stats">
+        <!-- Stats populated by JS -->
+      </div>
+      <div class="unit-skills" id="unit-skills">
+        <!-- Skills populated by JS -->
+      </div>
+      <div class="unit-info-actions">
+        <button class="action-btn upgrade-btn" id="btn-upgrade">
+          <span class="aether-icon">◆</span> อัปเกรด (<span id="upgrade-cost">100</span>)
+        </button>
+        <button class="action-btn sell-btn" id="btn-sell">
+          ขาย (+<span id="sell-value">75</span>)
+        </button>
+      </div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div class="pause-overlay hidden" id="pause-overlay">
+      <div class="pause-content">
+        <h2>หยุดพัก</h2>
+        <button class="menu-btn" id="btn-resume">เล่นต่อ</button>
+        <button class="menu-btn" id="btn-restart">เริ่มใหม่</button>
+        <button class="menu-btn" id="btn-quit">กลับเมนูหลัก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialogue / Cutscene Overlay -->
+  <div class="dialogue-overlay hidden" id="dialogue-overlay">
+    <div class="dialogue-bg"></div>
+    <div class="dialogue-characters">
+      <div class="dialogue-portrait left" id="dialogue-portrait-left"></div>
+      <div class="dialogue-portrait right" id="dialogue-portrait-right"></div>
+    </div>
+    <div class="dialogue-box">
+      <span class="dialogue-name" id="dialogue-name">ผู้บัญชาการ</span>
+      <p class="dialogue-text" id="dialogue-text"></p>
+      <span class="dialogue-continue">▼ คลิกเพื่อดำเนินการต่อ</span>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result-screen" class="screen">
+    <div class="result-content">
+      <h2 class="result-title" id="result-title">ชัยชนะ!</h2>
+      <div class="result-stars" id="result-stars">
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+      <div class="result-rewards" id="result-rewards">
+        <div class="reward-item">
+          <span class="reward-label">ค่าประสบการณ์ที่ได้รับ</span>
+          <span class="reward-value" id="reward-exp">+500</span>
+        </div>
+        <div class="reward-item">
+          <span class="reward-label">ทองที่ได้รับ</span>
+          <span class="reward-value" id="reward-gold">+300</span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="menu-btn" id="btn-retry">ลองใหม่</button>
+        <button class="menu-btn primary" id="btn-next-stage">ด่านถัดไป →</button>
+        <button class="menu-btn" id="btn-result-menu">เมนูหลัก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credits Modal -->
+  <div id="credits-modal" class="credits-modal-overlay"
+    onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="credits-modal-box">
+      <button class="credits-close-btn"
+        onclick="document.getElementById('credits-modal').classList.remove('active')">✕</button>
+      <div class="credits-header">
+        <span class="credits-icon">👥</span>
+        <h2 class="credits-title">จัดทำโดย</h2>
+        <p class="credits-subtitle">ทีมพัฒนา ASTRA: Aether Guardians</p>
+      </div>
+      <ul class="credits-list">
+        <li class="credits-item">
+          <span class="credits-id">6720310013</span>
+          <span class="credits-name">นาย พิสษฐิ์ สามัญ</span>
+        </li>
+        <li class="credits-item">
+          <span class="credits-id">6720310017</span>
+          <span class="credits-name">นาย วาริส ดมเด็น</span>
+        </li>
+        <li class="credits-item">
+          <span class="credits-id">6720310020</span>
+          <span class="credits-name">นาย อนัส ยะโยะ</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+
+</html>

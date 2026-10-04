@@ -18,6 +18,8 @@ export class Camera {
     this.targetX = 0;
     this.targetY = 0;
     this.targetZoom = 1;
+    this.rotation = 0;
+    this.targetRotation = 0;
     this.smoothing = 0.1;
   }
 
@@ -25,21 +27,30 @@ export class Camera {
    * Apply camera transform to canvas context
    */
   applyTransform(ctx) {
-    ctx.translate(
-      this.viewportWidth / 2 - this.x * this.zoom,
-      this.viewportHeight / 2 - this.y * this.zoom
-    );
-    // For now, zoom is kept at 1 for simplicity
-    // ctx.scale(this.zoom, this.zoom);
+    // Keep rotation around the viewport center so the map, path and entities rotate together.
+    ctx.translate(this.viewportWidth / 2, this.viewportHeight / 2);
+    ctx.rotate(this.rotation * Math.PI / 180);
+    // Keep the existing zoom behavior unchanged; Stage 1 only adds a small rotation.
+    ctx.translate(-this.x * this.zoom, -this.y * this.zoom);
   }
 
   /**
    * Convert screen coordinates to world coordinates
    */
   screenToWorld(screenX, screenY) {
+    // Inverse of applyTransform(): undo rotation, then zoom, then camera position.
+    const angle = -this.rotation * Math.PI / 180;
+    const dx = screenX - this.viewportWidth / 2;
+    const dy = screenY - this.viewportHeight / 2;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    const rotatedX = dx * cos - dy * sin;
+    const rotatedY = dx * sin + dy * cos;
+
     return {
-      x: (screenX - this.viewportWidth / 2) / this.zoom + this.x,
-      y: (screenY - this.viewportHeight / 2) / this.zoom + this.y,
+      x: rotatedX / this.zoom + this.x,
+      y: rotatedY / this.zoom + this.y,
     };
   }
 
@@ -68,6 +79,15 @@ export class Camera {
     this.x += (this.targetX - this.x) * this.smoothing;
     this.y += (this.targetY - this.y) * this.smoothing;
     this.zoom += (this.targetZoom - this.zoom) * this.smoothing;
+    this.rotation += (this.targetRotation - this.rotation) * this.smoothing;
+  }
+
+  /**
+   * Set camera rotation in degrees.
+   */
+  setRotation(degrees) {
+    this.targetRotation = degrees;
+    this.rotation = degrees;
   }
 
   /**

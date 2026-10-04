@@ -121,18 +121,35 @@
   <!-- Game Container -->
   <div id="game-container" class="screen">
     <!-- Skill Bar (Left) -->
-    <div class="skill-bar" id="skill-bar">
-      <div class="skill-slot" id="skill-meteor" data-skill="meteor">
-        <div class="skill-icon">🔥</div>
-        <div class="skill-name">METEOR</div>
-        <div class="skill-status" id="status-meteor">READY</div>
-        <div class="skill-cooldown-overlay" id="cd-meteor"></div>
+    <div class="skill-panel" id="skill-bar">
+      <div class="unit-panel-header">
+        <span>ใช้งานสกิล</span>
       </div>
-      <div class="skill-slot" id="skill-freeze" data-skill="freeze">
-        <div class="skill-icon">❄️</div>
-        <div class="skill-name">FREEZE</div>
-        <div class="skill-status" id="status-freeze">READY</div>
-        <div class="skill-cooldown-overlay" id="cd-freeze"></div>
+      <div class="skill-slots">
+        <div class="skill-slot" id="skill-meteor" data-skill="meteor">
+          <div class="skill-icon">🔥</div>
+          <div class="skill-name">METEOR</div>
+          <div class="skill-status" id="status-meteor">READY</div>
+          <div class="skill-cooldown-overlay" id="cd-meteor"></div>
+        </div>
+        <div class="skill-slot" id="skill-freeze" data-skill="freeze">
+          <div class="skill-icon">❄️</div>
+          <div class="skill-name">FREEZE</div>
+          <div class="skill-status" id="status-freeze">READY</div>
+          <div class="skill-cooldown-overlay" id="cd-freeze"></div>
+        </div>
+        <div class="skill-slot" id="skill-chain_lightning" data-skill="chain_lightning">
+          <div class="skill-icon">⚡</div>
+          <div class="skill-name">CHAIN</div>
+          <div class="skill-status" id="status-chain_lightning">READY</div>
+          <div class="skill-cooldown-overlay" id="cd-chain_lightning"></div>
+        </div>
+        <div class="skill-slot" id="skill-void_impact" data-skill="void_impact">
+          <div class="skill-icon">💥</div>
+          <div class="skill-name">VOID</div>
+          <div class="skill-status" id="status-void_impact">READY</div>
+          <div class="skill-cooldown-overlay" id="cd-void_impact"></div>
+        </div>
       </div>
     </div>
 
@@ -242,16 +259,6 @@
         <span class="star">★</span>
         <span class="star">★</span>
         <span class="star">★</span>
-      </div>
-      <div class="result-rewards" id="result-rewards">
-        <div class="reward-item">
-          <span class="reward-label">ค่าประสบการณ์ที่ได้รับ</span>
-          <span class="reward-value" id="reward-exp">+500</span>
-        </div>
-        <div class="reward-item">
-          <span class="reward-label">ทองที่ได้รับ</span>
-          <span class="reward-value" id="reward-gold">+300</span>
-        </div>
       </div>
       <div class="result-actions">
         <button class="menu-btn" id="btn-retry">ลองใหม่</button>

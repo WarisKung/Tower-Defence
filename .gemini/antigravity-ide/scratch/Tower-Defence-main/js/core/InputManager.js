@@ -13,6 +13,7 @@ export class InputManager {
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onClick = this._onClick.bind(this);
     this._onContextMenu = this._onContextMenu.bind(this);
+    this._onKeyDown = this._onKeyDown.bind(this);
 
     // Attach to entity canvas (top interactive layer)
     this.canvas = gameManager.entityCanvas;
@@ -24,6 +25,7 @@ export class InputManager {
     this.canvas.addEventListener('mousemove', this._onMouseMove);
     this.canvas.addEventListener('click', this._onClick);
     this.canvas.addEventListener('contextmenu', this._onContextMenu);
+    window.addEventListener('keydown', this._onKeyDown);
   }
 
   disable() {
@@ -31,6 +33,7 @@ export class InputManager {
     this.canvas.removeEventListener('mousemove', this._onMouseMove);
     this.canvas.removeEventListener('click', this._onClick);
     this.canvas.removeEventListener('contextmenu', this._onContextMenu);
+    window.removeEventListener('keydown', this._onKeyDown);
     this.hoveredTile = null;
     this.hoveredTowerSpot = null;
   }
@@ -116,6 +119,19 @@ export class InputManager {
     this.gm.selectedPlacedUnit = null;
     this.gm.unitInfoPanel.hide();
     this.gm.hud.deselectUnit();
+  }
+
+  _onKeyDown(e) {
+    if (!this.enabled) return;
+    if (e.key === 'Escape') {
+      if (this.gm.selectedSkill) {
+        this.gm.skillSystem.cancelSkill();
+      }
+      this.gm.selectedUnitType = null;
+      this.gm.selectedPlacedUnit = null;
+      this.gm.unitInfoPanel.hide();
+      this.gm.hud.deselectUnit();
+    }
   }
 
   /**

@@ -199,3 +199,36 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-aether-purple);
 }
+
+
+/* === ASTRA Theme Palette: theme.png === */
+:root {
+  --color-bg-dark: #0B0F2A;
+  --color-bg-deep: #0B0F2A;
+  --color-bg-medium: #1A1E3A;
+  --color-bg-surface: #1A1E3A;
+  --color-bg-elevated: #252A50;
+
+  --color-aether-blue: #4FD1FF;
+  --color-aether-cyan: #00D1FF;
+  --color-aether-purple: #7C3AED;
+  --color-aether-violet: #4B2DFF;
+  --color-aether-gold: #FFB347;
+  --color-aether-amber: #FFB347;
+
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #C8D0EA;
+  --color-text-muted: #7F89AA;
+  --color-text-accent: #00D1FF;
+
+  --gradient-aether: linear-gradient(135deg, #7C3AED, #4FD1FF);
+  --gradient-dark: linear-gradient(180deg, #0B0F2A 0%, #1A1E3A 100%);
+  --gradient-surface: linear-gradient(135deg, rgba(26, 30, 58, 0.88), rgba(11, 15, 42, 0.94));
+  --gradient-gold: linear-gradient(135deg, #FFB347, #FFD166);
+
+  --glass-bg: rgba(11, 15, 42, 0.78);
+  --glass-border: rgba(79, 209, 255, 0.22);
+  --shadow-glow-blue: 0 0 24px rgba(79, 209, 255, 0.35);
+  --shadow-glow-purple: 0 0 24px rgba(124, 58, 237, 0.40);
+  --shadow-glow-gold: 0 0 24px rgba(255, 179, 71, 0.30);
+}

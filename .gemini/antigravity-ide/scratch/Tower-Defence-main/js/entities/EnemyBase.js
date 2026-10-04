@@ -40,6 +40,21 @@ export class EnemyBase extends Entity {
     this.damageFlash = 0;
     this.hitShake = 0;
 
+    // Burn effect
+    this.isBurning = false;
+    this.burnDPS = 0;           // damage per second
+    this.burnDuration = 0;      // remaining seconds
+    this.burnDmgAccum = 0;      // accumulator for 1-second ticks
+
+    // Freeze effect
+    this.isFrozen = false;
+    this.freezeDuration = 0;    // remaining seconds
+    this.frozenOriginalSpeed = 0;
+
+    // Stun effect (used by VOID IMPACT)
+    this.isStunned = false;
+    this.stunDuration = 0;
+
     // State
     this.state = 'MOVING';
     this.blockedBy = null; // Knight that blocks this enemy
@@ -67,6 +82,51 @@ export class EnemyBase extends Entity {
     // Update effects
     if (this.damageFlash > 0) this.damageFlash -= dt * 5;
     if (this.hitShake > 0) this.hitShake -= dt * 8;
+
+    // --- Burn effect ---
+    if (this.isBurning) {
+      this.burnDuration -= dt;
+      this.burnDmgAccum += dt;
+      // Apply damage once per second
+      while (this.burnDmgAccum >= 1.0) {
+        this.burnDmgAccum -= 1.0;
+        const dmg = this.takeDamage(this.burnDPS, 'magic');
+        if (gameManager) {
+          gameManager.addFloatingText(this.x, this.y - 20, `🔥${dmg}`, '#ff6600', 12);
+        }
+      }
+      if (this.burnDuration <= 0) {
+        this.isBurning = false;
+        this.burnDPS = 0;
+        this.burnDmgAccum = 0;
+      }
+      if (this.isDead) return;
+    }
+
+    // --- Stun effect ---
+    if (this.isStunned) {
+      this.stunDuration -= dt;
+      if (this.stunDuration <= 0) {
+        this.isStunned = false;
+        this.stunDuration = 0;
+      } else {
+        this.state = 'STUNNED';
+        return;
+      }
+    }
+
+    // --- Freeze effect ---
+    if (this.isFrozen) {
+      this.freezeDuration -= dt;
+      if (this.freezeDuration <= 0) {
+        this.isFrozen = false;
+        this.moveSpeed = this.frozenOriginalSpeed;
+      } else {
+        // Frozen: do not move
+        this.state = 'FROZEN';
+        return;
+      }
+    }
 
     // Slow effect
     if (this.slowDuration > 0) {
@@ -157,6 +217,40 @@ export class EnemyBase extends Entity {
   }
 
   /**
+   * Apply burn (damage over time)
+   * @param {number} dps - damage per second
+   * @param {number} duration - total burn duration in seconds
+   */
+  applyBurn(dps, duration) {
+    this.isBurning = true;
+    this.burnDPS = dps;
+    this.burnDuration = duration;
+    this.burnDmgAccum = 0;
+  }
+
+  /**
+   * Apply freeze (stop movement)
+   * @param {number} duration - freeze duration in seconds
+   */
+  applyFreeze(duration) {
+    if (!this.isFrozen) {
+      this.frozenOriginalSpeed = this.moveSpeed;
+    }
+    this.isFrozen = true;
+    this.freezeDuration = duration;
+    this.moveSpeed = 0;
+  }
+
+  /**
+   * Apply stun effect
+   * @param {number} duration - stun duration in seconds
+   */
+  applyStun(duration) {
+    this.isStunned = true;
+    this.stunDuration = Math.max(this.stunDuration, duration);
+  }
+
+  /**
    * Render the enemy
    */
   render(ctx, interpolation) {
@@ -205,6 +299,69 @@ export class EnemyBase extends Entity {
 
     // Draw enemy body
     this._drawBody(ctx, color);
+
+    // --- Burn visual: flame particles around body ---
+    if (this.isBurning) {
+      for (let i = 0; i < 4; i++) {
+        const angle = this.animTimer * 4 + (i / 4) * Math.PI * 2;
+        const fx = Math.cos(angle) * 10;
+        const fy = Math.sin(angle) * 6 - 4;
+        const flicker = 0.4 + Math.sin(this.animTimer * 10 + i) * 0.3;
+        ctx.fillStyle = `rgba(255, 120, 0, ${flicker})`;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Glow
+      ctx.fillStyle = 'rgba(255, 80, 0, 0.15)';
+      ctx.beginPath();
+      ctx.arc(0, -4, 16, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // --- Stun visual ---
+    if (this.isStunned) {
+      ctx.strokeStyle = 'rgba(255, 220, 80, 0.95)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -10, 14, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ffe66d';
+      ctx.font = 'bold 12px Outfit';
+      ctx.textAlign = 'center';
+      ctx.fillText('✦', -7, -22);
+      ctx.fillText('✦', 7, -22);
+      ctx.fillStyle = '#fff3a3';
+      ctx.font = 'bold 10px Outfit';
+      ctx.fillText(`${Math.ceil(this.stunDuration)}s`, 0, -28);
+    }
+
+    // --- Freeze visual: ice shell around body ---
+    if (this.isFrozen) {
+      ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-13, -18, 26, 28, 4);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(150, 220, 255, 0.25)';
+      ctx.fill();
+
+      // Ice particles
+      for (let i = 0; i < 3; i++) {
+        const ix = -8 + i * 8;
+        const iy = -16 + Math.sin(this.animTimer * 2 + i) * 3;
+        ctx.fillStyle = 'rgba(200, 240, 255, 0.8)';
+        ctx.beginPath();
+        ctx.arc(ix, iy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Freeze countdown
+      ctx.fillStyle = '#88ddff';
+      ctx.font = 'bold 10px Outfit';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${Math.ceil(this.freezeDuration)}s`, 0, -22);
+    }
 
     ctx.restore();
 

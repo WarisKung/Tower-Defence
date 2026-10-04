@@ -250,6 +250,10 @@ export class GameManager {
 
     this.currentStageData = stageData;
 
+    // Keep the same camera basis as Stage 2 so grid, path and input remain aligned.
+    this.camera.setPosition(0, 0);
+    this.camera.setRotation(0);
+
     // Reset battle state
     this.units = [];
     this.enemies = [];
@@ -257,10 +261,12 @@ export class GameManager {
     this.floatingTexts = [];
     this.coreHP = stageData.coreHP;
     this.coreMaxHP = this.coreHP;
-    this.selectedUnitType = null;
     this.selectedPlacedUnit = null;
     this.selectedSkill = null;
     this.isWaveActive = false;
+    
+    // Reset skills
+    this.skillSystem.reset();
 
     // Stage 1 uses image-relative coordinates; earlier stages may still use a grid.
     this.gridManager = stageData.coordinateSystem === 'normalized'
@@ -269,7 +275,11 @@ export class GameManager {
         stageData.grid,
         stageData.tileSize || 64,
         stageData.gridOffsetX ?? 0,
-        stageData.gridOffsetY ?? -120
+        stageData.gridOffsetY ?? -120,
+        {
+          projection: 'isometric',
+          style: stageData.id === 'stage_1' ? 'fallen_kingdom' : 'default',
+        }
       );
     this.towerSpots = (stageData.towerSpots || []).map(spot => ({ ...spot, occupied: false }));
 
@@ -489,8 +499,15 @@ export class GameManager {
     ctx.clearRect(0, 0, this.gameWidth, this.gameHeight);
 
     // Dark base
-    ctx.fillStyle = '#0a0a12';
+    // Stage 1 uses a procedural fallen-kingdom palette; no image is used as the canvas background.
+    ctx.fillStyle = this.currentStageId === 'stage_1' ? '#070d1c' : '#0a0a12';
     ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+
+    if (this.currentStageId === 'stage_1') {
+      this._renderStage1Backdrop(ctx);
+    } else if (this.currentStageId === 'stage_2') {
+      this._renderStage2Backdrop(ctx);
+    }
 
     const stageImagePath = this.currentStageData?.backgroundImage;
 
@@ -526,15 +543,18 @@ export class GameManager {
     const offX = this.gridManager.offsetX;
     const offY = this.gridManager.offsetY;
 
-    // Compute grid bounding box in world space
-    // leftmost = col=0,row=max; rightmost = col=max,row=0
-    // topmost  = col=0,row=0;   bottommost = col=max,row=max
-    const gLeft   = offX + (0 - (rows-1)) * (tw / 2);
-    const gRight  = offX + ((cols-1) - 0) * (tw / 2);
-    const gTop    = offY;
-    const gBottom = offY + ((cols-1) + (rows-1)) * (th / 2);
-    const gWidth  = gRight - gLeft;
-    const gHeight = gBottom - gTop;
+    // Calculate the exact world-space bounds used by the active grid projection.
+    const isOrthographic = this.gridManager.projection === 'orthographic';
+    const gLeft = isOrthographic
+      ? offX
+      : offX - (rows - 1) * (tw / 2);
+    const gTop = offY;
+    const gWidth = isOrthographic
+      ? cols * tw
+      : ((cols - 1) * tw / 2) - gLeft + offX;
+    const gHeight = isOrthographic
+      ? rows * th
+      : ((cols - 1) + (rows - 1)) * (th / 2);
 
     ctx.save();
     this.camera.applyTransform(ctx);
@@ -548,7 +568,7 @@ export class GameManager {
           resolve();
         };
         img.onerror = () => {
-          ctx.fillStyle = '#0a0a12';
+          ctx.fillStyle = '#022c22';
           ctx.fillRect(gLeft, gTop, gWidth, gHeight);
           resolve();
         };
@@ -567,7 +587,212 @@ export class GameManager {
       this.gridManager.renderCore(ctx, this.currentStageData.corePosition);
     }
 
+    // Render enemy spawn points
+    this.gridManager.renderSpawns(ctx);
+
     ctx.restore();
+  }
+
+  _renderStage2Backdrop(ctx) {
+    // Stage 2: Enchanted Forest & Water — decorative background only.
+    // Gameplay remains controlled by the Stage 2 grid/path data.
+    const bg = ctx.createLinearGradient(0, 0, 0, this.gameHeight);
+    bg.addColorStop(0, '#071f25');
+    bg.addColorStop(0.42, '#0b3a31');
+    bg.addColorStop(1, '#06251f');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+
+    // Deep forest layers.
+    ctx.fillStyle = 'rgba(3, 30, 28, 0.88)';
+    ctx.beginPath();
+    ctx.moveTo(0, 170);
+    for (let x = 0; x <= this.gameWidth; x += 80) {
+      const y = 120 + ((x * 17) % 95);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(this.gameWidth, 0);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Magical river running through the map background.
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(34, 211, 238, 0.42)';
+    ctx.shadowBlur = 26;
+    ctx.strokeStyle = 'rgba(14, 116, 144, 0.58)';
+    ctx.lineWidth = 72;
+    ctx.beginPath();
+    ctx.moveTo(1040, -40);
+    ctx.bezierCurveTo(980, 105, 1030, 180, 900, 255);
+    ctx.bezierCurveTo(790, 320, 875, 405, 720, 485);
+    ctx.bezierCurveTo(600, 550, 690, 635, 610, 760);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(68, 230, 255, 0.34)';
+    ctx.lineWidth = 30;
+    ctx.beginPath();
+    ctx.moveTo(1040, -40);
+    ctx.bezierCurveTo(980, 105, 1030, 180, 900, 255);
+    ctx.bezierCurveTo(790, 320, 875, 405, 720, 485);
+    ctx.bezierCurveTo(600, 550, 690, 635, 610, 760);
+    ctx.stroke();
+
+    // Waterfall pools / magical water lights.
+    const pools = [
+      [1030, 75, 70],
+      [790, 340, 58],
+      [650, 575, 76],
+      [610, 705, 55]
+    ];
+    for (const [x, y, radius] of pools) {
+      const glow = ctx.createRadialGradient(x, y, 2, x, y, radius);
+      glow.addColorStop(0, 'rgba(103, 232, 249, 0.28)');
+      glow.addColorStop(0.55, 'rgba(34, 211, 238, 0.10)');
+      glow.addColorStop(1, 'rgba(34, 211, 238, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Soft mist between forest layers.
+    const mist = ctx.createLinearGradient(0, 260, 0, 600);
+    mist.addColorStop(0, 'rgba(125, 211, 252, 0.02)');
+    mist.addColorStop(0.5, 'rgba(167, 243, 208, 0.08)');
+    mist.addColorStop(1, 'rgba(125, 211, 252, 0.02)');
+    ctx.fillStyle = mist;
+    ctx.fillRect(0, 170, this.gameWidth, 450);
+
+    // Magical fireflies and water particles.
+    for (let i = 0; i < 55; i++) {
+      const x = (i * 83) % this.gameWidth;
+      const y = 45 + ((i * 47) % 610);
+      const r = i % 7 === 0 ? 2.4 : 1.2;
+      ctx.fillStyle = i % 3 === 0
+        ? 'rgba(110, 231, 183, 0.72)'
+        : 'rgba(103, 232, 249, 0.56)';
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // Vignette keeps the grid and UI readable.
+    const vignette = ctx.createRadialGradient(
+      this.gameWidth / 2,
+      this.gameHeight / 2,
+      250,
+      this.gameWidth / 2,
+      this.gameHeight / 2,
+      800
+    );
+    vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vignette.addColorStop(1, 'rgba(0, 20, 18, 0.48)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+  }
+
+  _renderStage1Backdrop(ctx) {
+    // Stage 1: Fallen Kingdom — decorative only; gameplay still comes from the grid.
+    const bg = ctx.createLinearGradient(0, 0, 0, this.gameHeight);
+    bg.addColorStop(0, '#0a1430');
+    bg.addColorStop(0.48, '#10152b');
+    bg.addColorStop(1, '#180f1d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+
+    // Distant Aether light.
+    const aetherGlow = ctx.createRadialGradient(1040, 95, 20, 1040, 95, 470);
+    aetherGlow.addColorStop(0, 'rgba(79, 209, 255, 0.22)');
+    aetherGlow.addColorStop(0.45, 'rgba(79, 120, 255, 0.08)');
+    aetherGlow.addColorStop(1, 'rgba(79, 120, 255, 0)');
+    ctx.fillStyle = aetherGlow;
+    ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+
+    // Burning Abyss glow from the lower-left ruins.
+    const abyssGlow = ctx.createRadialGradient(75, 610, 8, 75, 610, 430);
+    abyssGlow.addColorStop(0, 'rgba(255, 72, 36, 0.34)');
+    abyssGlow.addColorStop(0.45, 'rgba(255, 72, 36, 0.10)');
+    abyssGlow.addColorStop(1, 'rgba(255, 72, 36, 0)');
+    ctx.fillStyle = abyssGlow;
+    ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+
+    // Distant ruined skyline.
+    ctx.fillStyle = 'rgba(21, 29, 52, 0.88)';
+    ctx.beginPath();
+    ctx.moveTo(0, 230);
+    ctx.lineTo(95, 165);
+    ctx.lineTo(145, 205);
+    ctx.lineTo(220, 105);
+    ctx.lineTo(285, 190);
+    ctx.lineTo(365, 125);
+    ctx.lineTo(440, 205);
+    ctx.lineTo(525, 95);
+    ctx.lineTo(615, 190);
+    ctx.lineTo(710, 120);
+    ctx.lineTo(805, 205);
+    ctx.lineTo(900, 110);
+    ctx.lineTo(1000, 185);
+    ctx.lineTo(1090, 90);
+    ctx.lineTo(1180, 175);
+    ctx.lineTo(1280, 115);
+    ctx.lineTo(1280, 0);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Thin Aether stars / embers.
+    for (let i = 0; i < 42; i++) {
+      const x = (i * 97) % this.gameWidth;
+      const y = 28 + ((i * 53) % 205);
+      const r = i % 5 === 0 ? 1.8 : 1;
+      ctx.fillStyle = i % 4 === 0 ? 'rgba(79, 209, 255, 0.65)' : 'rgba(255, 220, 160, 0.38)';
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Lava fissures at the edge of the ruined kingdom.
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 88, 45, 0.30)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, 575);
+    ctx.lineTo(55, 540);
+    ctx.lineTo(82, 565);
+    ctx.lineTo(130, 525);
+    ctx.lineTo(175, 555);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255, 178, 76, 0.18)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 592);
+    ctx.lineTo(60, 555);
+    ctx.lineTo(92, 579);
+    ctx.lineTo(142, 540);
+    ctx.stroke();
+    ctx.restore();
+
+    // Soft vignette keeps the playable grid readable.
+    const vignette = ctx.createRadialGradient(
+      this.gameWidth / 2,
+      this.gameHeight / 2,
+      260,
+      this.gameWidth / 2,
+      this.gameHeight / 2,
+      780
+    );
+    vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vignette.addColorStop(1, 'rgba(0, 0, 0, 0.38)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
   }
 
   /**
@@ -647,7 +872,8 @@ export class GameManager {
     const enemyData = ENEMY_DATA[enemyType];
     if (!enemyData) return;
 
-    const path = this.currentStageData.paths[pathIndex] || this.currentStageData.paths[0];
+    const paths = this.currentStageData.paths || [];
+    const path = paths[pathIndex] || paths[0];
     if (!path || path.length === 0) return;
 
     const normalizedPath = this.currentStageData.coordinateSystem === 'normalized' && this.currentStageData.spawn
@@ -660,7 +886,6 @@ export class GameManager {
 
     const enemy = createEnemy(enemyType, screenPos.x, screenPos.y, enemyData);
 
-    // Convert path waypoints to screen coordinates
     enemy.setPath(normalizedPath.map(wp => this.currentStageData.coordinateSystem === 'normalized'
       ? this.normalizedToWorld(wp)
       : this.gridManager.gridToScreen(wp.col, wp.row)));
@@ -710,13 +935,13 @@ export class GameManager {
     this.saveManager.save(this.playerData);
 
     setTimeout(() => this.setState(GameState.RESULT), 1000);
-    this._resultData = { victory: true, stars, exp: 500, gold: 300 };
+    this._resultData = { victory: true, stars };
   }
 
   _onDefeat() {
     this.isWaveActive = false;
     setTimeout(() => this.setState(GameState.RESULT), 1000);
-    this._resultData = { victory: false, stars: 0, exp: 100, gold: 50 };
+    this._resultData = { victory: false, stars: 0 };
   }
 
   _calculateStars() {
@@ -727,7 +952,7 @@ export class GameManager {
   }
 
   _showResultScreen() {
-    const data = this._resultData || { victory: false, stars: 0, exp: 0, gold: 0 };
+    const data = this._resultData || { victory: false, stars: 0 };
     this.resultScreen.show(data);
     this._showScreen('result-screen');
   }

@@ -35,8 +35,6 @@ export class ResultScreen {
       nextBtn.style.display = 'none';
     }
     
-    document.getElementById('reward-exp').textContent = `+${data.exp}`;
-    document.getElementById('reward-gold').textContent = `+${data.gold}`;
     
     // Animate stars
     starsEl.innerHTML = '';
